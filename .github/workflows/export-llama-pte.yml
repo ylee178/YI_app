@@ -52,9 +52,8 @@ jobs:
           git clone --depth 1 --branch v0.2.0 https://github.com/pytorch/executorch.git
           cd ~/executorch
           git submodule update --init --depth 1
-          pip install --upgrade pip setuptools wheel
-          pip install -r ~/executorch/requirements.txt
-          pip install -e ~/executorch --no-build-isolation
+          bash ./install_requirements.sh
+          pip install -e . --no-build-isolation
 
       - name: Activate cached ExecuTorch
         if: steps.cache-executorch.outputs.cache-hit == 'true'
