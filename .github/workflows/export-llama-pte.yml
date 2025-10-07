@@ -43,13 +43,13 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/executorch
-          key: executorch-${{ runner.os }}-v0.2.0
+          key: executorch-${{ runner.os }}-v0.3.0
 
       - name: Install ExecuTorch
         if: steps.cache-executorch.outputs.cache-hit != 'true'
         run: |
           cd ~
-          git clone --depth 1 --branch v0.2.0 https://github.com/pytorch/executorch.git
+          git clone --depth 1 --branch v0.3.0 https://github.com/pytorch/executorch.git
           cd ~/executorch
           git submodule update --init --depth 1
           bash ./install_requirements.sh
