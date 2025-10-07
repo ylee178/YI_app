@@ -112,15 +112,7 @@ jobs:
           cat manifest.json
 
           # Validate PRD compliance fields
-          python3 -c "
-import json
-with open('manifest.json') as f:
-    m = json.load(f)
-assert m['runtime'] == 'ExecuTorch', f\"Runtime must be ExecuTorch, got {m['runtime']}\"
-assert m['prd_compliant'] == True, 'PRD compliance flag must be True'
-assert m['pte_size_gb'] <= 1.5, f\"Size {m['pte_size_gb']} exceeds 1.5GB limit\"
-print('✅ Manifest validation passed')
-"
+          python3 -c "import json; m = json.load(open('manifest.json')); assert m['runtime'] == 'ExecuTorch'; assert m['prd_compliant'] == True; assert m['pte_size_gb'] <= 1.5; print('✅ Manifest validation passed')"
 
       - name: Upload PTE artifact
         uses: actions/upload-artifact@v4
