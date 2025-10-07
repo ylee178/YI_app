@@ -55,7 +55,7 @@ jobs:
 
           # Fix gflags CMake compatibility issue
           cd third-party/gflags
-          git fetch --depth 1 origin tag v2.2.2
+          git fetch --depth 1 origin master
           git checkout FETCH_HEAD
           cd ~/executorch
 
