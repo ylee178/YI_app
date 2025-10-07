@@ -1,0 +1,122 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Tone Memory Schema",
+  "description": "Lightweight KV structure for tracking user preferences and emotional state",
+  "type": "object",
+  "properties": {
+    "prefs": {
+      "type": "object",
+      "description": "User preferences for interaction style",
+      "properties": {
+        "nickname": {
+          "type": "string",
+          "description": "User's preferred name or nickname",
+          "default": null
+        },
+        "formality": {
+          "type": "string",
+          "enum": ["casual", "formal", "auto"],
+          "description": "Preferred formality level",
+          "default": "casual"
+        },
+        "emoji": {
+          "type": "string",
+          "enum": ["none", "light", "full"],
+          "description": "Emoji usage preference",
+          "default": "light"
+        },
+        "response_length": {
+          "type": "string",
+          "enum": ["brief", "moderate", "detailed"],
+          "description": "Preferred response length",
+          "default": "moderate"
+        },
+        "question_frequency": {
+          "type": "string",
+          "enum": ["low", "medium", "high"],
+          "description": "How often to ask follow-up questions",
+          "default": "medium"
+        }
+      }
+    },
+    "last_state": {
+      "type": "object",
+      "description": "Most recent emotional state and context",
+      "properties": {
+        "emotion": {
+          "type": "string",
+          "description": "Primary emotion detected (sadness, anxiety, anger, joy, etc.)",
+          "examples": ["sadness", "anxiety", "anger", "guilt", "loneliness", "joy"]
+        },
+        "intensity": {
+          "type": "string",
+          "enum": ["low", "medium", "high"],
+          "description": "Emotional intensity level",
+          "default": "medium"
+        },
+        "topic": {
+          "type": "string",
+          "description": "Main topic or concern",
+          "examples": ["friendship", "work", "family", "health"]
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When this state was recorded"
+        }
+      }
+    },
+    "anchors": {
+      "type": "array",
+      "description": "Persistent interaction patterns and important notes",
+      "items": {
+        "type": "string"
+      },
+      "examples": [
+        ["prefers_short_replies", "avoids_questions_when_overwhelmed", "loves_lofi_music"]
+      ]
+    },
+    "session_summary": {
+      "type": "string",
+      "description": "Brief summary of current session (updated every 8-10 turns)",
+      "maxLength": 500
+    },
+    "turn_count": {
+      "type": "integer",
+      "description": "Number of turns in current session",
+      "minimum": 0
+    },
+    "last_recalibration": {
+      "type": "integer",
+      "description": "Turn number when tone was last recalibrated",
+      "minimum": 0
+    }
+  },
+  "required": ["prefs", "last_state", "anchors"],
+  "additionalProperties": false,
+  "examples": [
+    {
+      "prefs": {
+        "nickname": "Alex",
+        "formality": "casual",
+        "emoji": "light",
+        "response_length": "brief",
+        "question_frequency": "low"
+      },
+      "last_state": {
+        "emotion": "anxiety",
+        "intensity": "high",
+        "topic": "presentation",
+        "timestamp": "2025-10-07T14:30:00Z"
+      },
+      "anchors": [
+        "prefers_short_replies",
+        "gets_overwhelmed_by_too_many_questions",
+        "appreciates_concrete_advice"
+      ],
+      "session_summary": "User is feeling anxious about upcoming presentation. Has history of performance anxiety. Responding well to grounding techniques.",
+      "turn_count": 8,
+      "last_recalibration": 0
+    }
+  ]
+}

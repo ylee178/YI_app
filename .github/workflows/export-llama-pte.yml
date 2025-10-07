@@ -1,0 +1,163 @@
+name: Export Llama 3.2 1B PTE
+
+on:
+  workflow_dispatch:
+    inputs:
+      force_rebuild:
+        description: 'Force rebuild even if artifact exists'
+        required: false
+        default: 'false'
+  push:
+    paths:
+      - 'models/llama3.2-1b/export_pte.py'
+      - '.github/workflows/export-llama-pte.yml'
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          df -h
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake ninja-build
+
+      - name: Cache ExecuTorch
+        id: cache-executorch
+        uses: actions/cache@v4
+        with:
+          path: ~/executorch
+          key: executorch-${{ runner.os }}-${{ hashFiles('**/requirements.txt') }}
+
+      - name: Install ExecuTorch
+        if: steps.cache-executorch.outputs.cache-hit != 'true'
+        run: |
+          cd ~
+          git clone --depth 1 --branch v0.2.0 https://github.com/pytorch/executorch.git
+          cd executorch
+          git submodule update --init --depth 1
+          pip install --upgrade pip setuptools wheel
+          pip install -r requirements.txt
+          pip install -e . --no-build-isolation
+
+      - name: Activate cached ExecuTorch
+        if: steps.cache-executorch.outputs.cache-hit == 'true'
+        run: |
+          cd ~/executorch
+          pip install -e . --no-build-isolation --no-deps
+
+      - name: Install project dependencies
+        run: |
+          pip install transformers==4.43.* safetensors huggingface-hub torch torchvision
+
+      - name: Verify ExecuTorch installation
+        run: |
+          python -c "from executorch.exir import to_edge; print('ExecuTorch OK')"
+
+      - name: Export Llama 3.2 1B to PTE
+        working-directory: models/llama3.2-1b
+        run: |
+          python export_pte.py 2>&1 | tee export_pte_log.txt
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+
+      - name: Verify PTE file size
+        working-directory: models/llama3.2-1b
+        run: |
+          if [ ! -f *.pte ]; then
+            echo "ERROR: No .pte file generated"
+            exit 1
+          fi
+
+          PTE_FILE=$(ls *.pte | head -n 1)
+          SIZE_BYTES=$(stat -c%s "$PTE_FILE")
+          SIZE_GB=$(echo "scale=3; $SIZE_BYTES / 1024 / 1024 / 1024" | bc)
+
+          echo "PTE file: $PTE_FILE"
+          echo "Size: $SIZE_GB GB"
+
+          # Check PRD limit (1.5GB)
+          if (( $(echo "$SIZE_GB > 1.5" | bc -l) )); then
+            echo "ERROR: PTE size $SIZE_GB GB exceeds 1.5GB PRD limit"
+            exit 1
+          fi
+
+          echo "✅ Size validation passed: $SIZE_GB GB <= 1.5 GB"
+
+      - name: Verify manifest.json
+        working-directory: models/llama3.2-1b
+        run: |
+          if [ ! -f manifest.json ]; then
+            echo "ERROR: manifest.json not generated"
+            exit 1
+          fi
+
+          cat manifest.json
+
+          # Validate PRD compliance fields
+          python3 -c "
+import json
+with open('manifest.json') as f:
+    m = json.load(f)
+assert m['runtime'] == 'ExecuTorch', f\"Runtime must be ExecuTorch, got {m['runtime']}\"
+assert m['prd_compliant'] == True, 'PRD compliance flag must be True'
+assert m['pte_size_gb'] <= 1.5, f\"Size {m['pte_size_gb']} exceeds 1.5GB limit\"
+print('✅ Manifest validation passed')
+"
+
+      - name: Upload PTE artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: llama3.2-1b-pte-${{ github.sha }}
+          path: |
+            models/llama3.2-1b/*.pte
+            models/llama3.2-1b/manifest.json
+            models/llama3.2-1b/export_pte_log.txt
+          retention-days: 30
+
+      - name: Create release asset (on main branch)
+        if: github.ref == 'refs/heads/main'
+        working-directory: models/llama3.2-1b
+        run: |
+          PTE_FILE=$(ls *.pte | head -n 1)
+          SHA256=$(sha256sum "$PTE_FILE" | cut -d' ' -f1)
+
+          echo "## Llama 3.2 1B PTE Export" > release_notes.md
+          echo "" >> release_notes.md
+          echo "**Commit:** ${{ github.sha }}" >> release_notes.md
+          echo "**File:** $PTE_FILE" >> release_notes.md
+          echo "**SHA256:** $SHA256" >> release_notes.md
+          echo "" >> release_notes.md
+          cat manifest.json >> release_notes.md
+
+          cat release_notes.md
+
+      - name: Summary
+        run: |
+          echo "## Export Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          cd models/llama3.2-1b
+          PTE_FILE=$(ls *.pte | head -n 1)
+          echo "**PTE File:** \`$PTE_FILE\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Manifest:**" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`json" >> $GITHUB_STEP_SUMMARY
+          cat manifest.json >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY

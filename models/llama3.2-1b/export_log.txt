@@ -1,0 +1,104 @@
+/Users/uxersean/Desktop/YI_Clean/venv/lib/python3.13/site-packages/torch/onnx/_internal/registration.py:162: OnnxExporterWarning: Symbolic function 'aten::scaled_dot_product_attention' already registered for opset 14. Replacing the existing function with new function. This is unexpected. Please report it on https://github.com/pytorch/pytorch/issues.
+  warnings.warn(
+/Users/uxersean/Desktop/YI_Clean/venv/lib/python3.13/site-packages/transformers/masking_utils.py:207: TracerWarning: Converting a tensor to a Python boolean might cause the trace to be incorrect. We can't record the data flow of Python values, so this value will be treated as a constant in the future. This means that the trace might not generalize to other inputs!
+  if (padding_length := kv_length + kv_offset - attention_mask.shape[-1]) > 0:
+/Users/uxersean/Desktop/YI_Clean/venv/lib/python3.13/site-packages/transformers/masking_utils.py:235: TracerWarning: Converting a tensor to a Python boolean might cause the trace to be incorrect. We can't record the data flow of Python values, so this value will be treated as a constant in the future. This means that the trace might not generalize to other inputs!
+  if padding_mask is not None and padding_mask.shape[-1] > kv_length:
+/Users/uxersean/Desktop/YI_Clean/venv/lib/python3.13/site-packages/transformers/integrations/sdpa_attention.py:81: TracerWarning: Converting a tensor to a Python boolean might cause the trace to be incorrect. We can't record the data flow of Python values, so this value will be treated as a constant in the future. This means that the trace might not generalize to other inputs!
+  is_causal = query.shape[2] > 1 and attention_mask is None and getattr(module, "is_causal", True)
+/Users/uxersean/Desktop/YI_Clean/venv/lib/python3.13/site-packages/torch/onnx/symbolic_opset9.py:5350: UserWarning: Exporting aten::index operator of advanced indexing in opset 14 is achieved by combination of multiple ONNX operators, including Reshape, Transpose, Concat, and Gather. If indices include negative values, the exported graph will produce incorrect results.
+  warnings.warn(
+[1/6] Loading model and tokenizer from meta-llama/Llama-3.2-1B-Instruct...
+    Using temp directory: /var/folders/ws/jjg02zl92t571kbg_q7vz5lh0000gn/T/onnx_export_6ufathot
+[2/6] Exporting to ONNX format...
+Traceback (most recent call last):
+  File "/Users/uxersean/Desktop/YI_Clean/models/llama3.2-1b/export_onnx.py", line 171, in <module>
+    main()
+    ~~~~^^
+  File "/Users/uxersean/Desktop/YI_Clean/models/llama3.2-1b/export_onnx.py", line 34, in main
+    model = ORTModelForCausalLM.from_pretrained(
+        MODEL_ID,
+        export=True,
+        use_cache=False  # Disable KV cache for simplicity
+    )
+  File "/Users/uxersean/Desktop/YI_Clean/venv/lib/python3.13/site-packages/optimum/onnxruntime/modeling_ort.py", line 552, in from_pretrained
+    return super().from_pretrained(
+           ~~~~~~~~~~~~~~~~~~~~~~~^
+        model_id,
+        ^^^^^^^^^
+    ...<14 lines>...
+        **kwargs,
+        ^^^^^^^^^
+    )
+    ^
+  File "/Users/uxersean/Desktop/YI_Clean/venv/lib/python3.13/site-packages/optimum/modeling_base.py", line 419, in from_pretrained
+    return from_pretrained_method(
+        model_id=model_id,
+    ...<9 lines>...
+        **kwargs,
+    )
+  File "/Users/uxersean/Desktop/YI_Clean/venv/lib/python3.13/site-packages/optimum/onnxruntime/modeling_decoder.py", line 773, in _export
+    main_export(
+    ~~~~~~~~~~~^
+        model_name_or_path=model_id,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<11 lines>...
+        trust_remote_code=trust_remote_code,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/uxersean/Desktop/YI_Clean/venv/lib/python3.13/site-packages/optimum/exporters/onnx/__main__.py", line 418, in main_export
+    onnx_export_from_model(
+    ~~~~~~~~~~~~~~~~~~~~~~^
+        model=model,
+        ^^^^^^^^^^^^
+    ...<19 lines>...
+        **kwargs_shapes,
+        ^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/uxersean/Desktop/YI_Clean/venv/lib/python3.13/site-packages/optimum/exporters/onnx/convert.py", line 1186, in onnx_export_from_model
+    _, onnx_outputs = export_models(
+                      ~~~~~~~~~~~~~^
+        models_and_onnx_configs=models_and_onnx_configs,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+        model_kwargs=model_kwargs,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/uxersean/Desktop/YI_Clean/venv/lib/python3.13/site-packages/optimum/exporters/onnx/convert.py", line 770, in export_models
+    export(
+    ~~~~~~^
+        model=submodel,
+        ^^^^^^^^^^^^^^^
+    ...<9 lines>...
+        model_kwargs=model_kwargs,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/uxersean/Desktop/YI_Clean/venv/lib/python3.13/site-packages/optimum/exporters/onnx/convert.py", line 874, in export
+    export_output = export_pytorch(
+        model,
+    ...<7 lines>...
+        model_kwargs=model_kwargs,
+    )
+  File "/Users/uxersean/Desktop/YI_Clean/venv/lib/python3.13/site-packages/optimum/exporters/onnx/convert.py", line 597, in export_pytorch
+    onnx.save(
+    ~~~~~~~~~^
+        onnx_model,
+        ^^^^^^^^^^^
+    ...<5 lines>...
+        convert_attribute=True,
+        ^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/uxersean/Desktop/YI_Clean/venv/lib/python3.13/site-packages/onnx/__init__.py", line 341, in save_model
+    proto = write_external_data_tensors(proto, basepath)
+  File "/Users/uxersean/Desktop/YI_Clean/venv/lib/python3.13/site-packages/onnx/external_data_helper.py", line 327, in write_external_data_tensors
+    save_external_data(tensor, filepath)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/Users/uxersean/Desktop/YI_Clean/venv/lib/python3.13/site-packages/onnx/external_data_helper.py", line 216, in save_external_data
+    data_file.write(tensor.raw_data)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+OSError: [Errno 28] No space left on device

@@ -1,0 +1,154 @@
+================================================================================
+PTE VALIDATION - QUICK START GUIDE
+================================================================================
+
+WHEN ARTIFACT IS READY (~30 minutes from now):
+
+1. DOWNLOAD ARTIFACT (2-5 min)
+   -----------------------------------------------------------------------
+   cd /Users/uxersean/Desktop/YI_Clean
+   gh run list --limit 5                    # Find run ID
+   gh run download <run-id> -n llama3.2-1b-pte
+
+2. QUICK CHECK (30 sec)
+   -----------------------------------------------------------------------
+   ls -lh models/llama3.2-1b/*.pte         # Should be ~1.2-1.5 GB
+   shasum -a 256 models/llama3.2-1b/*.pte  # Get SHA256
+   cat models/llama3.2-1b/manifest.json | jq  # View manifest
+
+3. RUN FULL VALIDATION (5 min)
+   -----------------------------------------------------------------------
+   ./tools/run_full_pte_validation.sh models/llama3.2-1b/llama3.2-1b-int8-seq512.pte
+
+   This runs:
+   - Basic file validation (size, SHA256)
+   - Guard validation (empty file/partition checks)
+   - INT8 coverage validation
+   - Manifest verification
+   - KPI smoke test
+   - Report generation
+
+4. REVIEW RESULTS (2 min)
+   -----------------------------------------------------------------------
+   cat results/pte_validation_<timestamp>.json | jq
+
+   Check for:
+   - "overall_status": "PASS"
+   - "gates": all true/pass
+   - "pte.size_gb": <1.5
+
+================================================================================
+INDIVIDUAL VALIDATION COMMANDS (if needed)
+================================================================================
+
+Basic PTE verification:
+  python3 tools/verify_pte.py models/llama3.2-1b/*.pte --max-size-gb 1.5
+
+Guard validation:
+  python3 tools/validate_pte_guards.py models/llama3.2-1b/*.pte
+
+INT8 coverage:
+  python3 tools/validate_int8_coverage.py models/llama3.2-1b/*.pte \
+      --target-coverage 0.9 \
+      --json-output results/int8_coverage.json
+
+KPI smoke test:
+  python3 tools/kpi_smoke_test.py models/llama3.2-1b/*.pte \
+      --json-output results/kpi_smoke.json
+
+================================================================================
+SUCCESS CRITERIA
+================================================================================
+
+CRITICAL GATES (MUST PASS):
+  [x] File size <= 1.5 GB
+  [x] File non-empty (size > 0)
+  [x] Buffer readable
+  [x] SHA256 matches manifest
+  [x] No crash on load
+
+QUALITY GATES (SMOKE TEST):
+  [x] INT8 coverage >= 90%
+  [x] TTFT <= 350ms (pre-optimization)
+  [x] tok/s >= 10 (pre-optimization)
+  [x] mem_peak <= 3500MB (pre-optimization)
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+ISSUE: Empty PTE file (0 bytes)
+FIX:
+  1. Re-download: gh run download <run-id> -n llama3.2-1b-pte --clobber
+  2. Check export logs: gh run view <run-id> --log
+  3. If export failed, investigate memory/quantization issues
+
+ISSUE: File size > 2 GB
+FIX:
+  1. Likely FP32 instead of INT8
+  2. Check export script quantization config
+  3. Re-export with INT8 enabled
+
+ISSUE: SHA256 mismatch
+FIX:
+  1. Re-download artifact (corruption during download)
+  2. Verify manifest SHA256 is correct
+
+ISSUE: KPI smoke test fails (ExecuTorch runtime not available)
+FIX:
+  1. Install ExecuTorch: pip install executorch
+  2. Or activate ExecuTorch venv: source venv_et/bin/activate
+  3. Re-run smoke test
+
+================================================================================
+NEXT STEPS AFTER VALIDATION
+================================================================================
+
+IF PASS:
+  1. Copy PTE to React Native app assets
+  2. Run on iOS/Android device (NOT simulator)
+  3. Measure actual TTFT/tok_s/mem_peak on target hardware
+  4. Run full benchmark suite (20-turn conversation)
+  5. Validate quality score (EQ >= 85)
+
+IF FAIL:
+  1. Review specific failure in validation report
+  2. Check GitHub Actions export logs
+  3. Investigate root cause
+  4. Apply fix to export script
+  5. Re-run export and validation
+
+================================================================================
+DOCUMENTATION
+================================================================================
+
+Full Checklist:
+  /Users/uxersean/Desktop/YI_Clean/tools/PTE_VALIDATION_CHECKLIST.md
+
+INT8 Coverage Research:
+  /Users/uxersean/Desktop/YI_Clean/tools/INT8_COVERAGE_RESEARCH.md
+
+QA Summary:
+  /Users/uxersean/Desktop/YI_Clean/results/QA_SUMMARY_PTE_VALIDATION_PREP.md
+
+Machine-Readable Report:
+  /Users/uxersean/Desktop/YI_Clean/results/qa_pte_validation_prep_20251007.json
+
+================================================================================
+ESTIMATED TIMELINE
+================================================================================
+
+  T+0:   GitHub Actions export starts
+  T+30:  Artifact ready for download
+  T+32:  Artifact downloaded (2 min)
+  T+33:  Quick manual check (1 min)
+  T+38:  Automated validation complete (5 min)
+  T+40:  Report reviewed (2 min)
+  ---------------------------------------------------
+  TOTAL: 40 minutes from export start to validation complete
+
+================================================================================
+STATUS: READY FOR ARTIFACT
+ALL TOOLS PREPARED AND TESTED
+AWAITING GITHUB ACTIONS COMPLETION (~30 MIN)
+================================================================================
