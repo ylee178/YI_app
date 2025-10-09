@@ -12,10 +12,12 @@ ENV/
 # Model artifacts (too large for git)
 *.pte
 *.onnx
+*.gguf
 *.bin
 *.safetensors
-models/llama3.2-1b/llama3.2-1b-int8-seq512.pte
-models/gemma-1b/gemma-1b-int8-seq512.pte
+models/**/*.pte
+models/**/*.gguf
+models/**/*.onnx
 
 # Logs
 *.log

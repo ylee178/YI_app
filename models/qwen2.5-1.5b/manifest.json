@@ -1,0 +1,60 @@
+{
+  "model": "Qwen 2.5 1.5B Instruct Q4_K_M",
+  "version": "1.0.0",
+  "file": "qwen2.5-1.5b-instruct-q4_k_m.gguf",
+  "size_bytes": 1117320736,
+  "size_mb": 1065.6,
+  "sha256": "6a1a2eb6d15622bf3c96857206351ba97e1af16c30d7a74ee38970e434e9407e",
+  "cdn_url": "https://r2.yi-app.workers.dev/qwen-q4.gguf",
+  "quantization": "Q4_K_M",
+  "context_length": 512,
+  "languages": ["ko", "en", "zh", "ja"],
+  "baseline_metrics": {
+    "load_time_ms": 290,
+    "ttft_ms": {
+      "korean": 71,
+      "english": 76,
+      "chinese": 76,
+      "japanese": 75
+    },
+    "tokens_per_second": {
+      "korean": 48,
+      "english": 48,
+      "chinese": 48,
+      "japanese": 47
+    },
+    "prompt_eval_speed": {
+      "korean": 183,
+      "english": 157,
+      "chinese": 144,
+      "japanese": 147
+    }
+  },
+  "recommended_presets": {
+    "full": {
+      "ctx": 1024,
+      "max_new": 256,
+      "top_p": 0.95,
+      "temp": 0.70,
+      "min_ram_mb": 8192
+    },
+    "safe": {
+      "ctx": 512,
+      "max_new": 128,
+      "top_p": 0.90,
+      "temp": 0.65,
+      "min_ram_mb": 6144
+    },
+    "guard": {
+      "ctx": 384,
+      "max_new": 96,
+      "top_p": 0.85,
+      "temp": 0.60,
+      "min_ram_mb": 4096
+    }
+  },
+  "admission_formula": "free_ram_MB >= size_mb * 1.6 + 600",
+  "required_ram_mb": 2305,
+  "created_at": "2025-10-09T11:15:00Z",
+  "huggingface_repo": "Qwen/Qwen2.5-1.5B-Instruct-GGUF"
+}

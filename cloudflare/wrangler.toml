@@ -1,0 +1,27 @@
+# Cloudflare R2 Configuration for YI Model Distribution
+
+name = "yi-models"
+compatibility_date = "2025-10-09"
+
+# R2 Bucket Configuration
+[[r2_buckets]]
+binding = "YI_MODELS"
+bucket_name = "yi-models-prod"
+preview_bucket_name = "yi-models-dev"
+
+# Workers for CDN distribution
+# Note: Actual worker deployment requires Cloudflare account setup
+# Commands to execute (manual step):
+# 1. wrangler login
+# 2. wrangler r2 bucket create yi-models-prod
+# 3. wrangler r2 object put yi-models-prod/qwen-q4.gguf --file=../models/qwen2.5-1.5b/qwen2.5-1.5b-instruct-q4_k_m.gguf
+# 4. wrangler r2 object put yi-models-prod/manifest.json --file=../models/qwen2.5-1.5b/manifest.json
+
+# Expected CDN URL structure:
+# https://r2.yi-app.workers.dev/qwen-q4.gguf (model file)
+# https://r2.yi-app.workers.dev/manifest.json (metadata)
+
+# Public access configuration
+# Set custom domain in Cloudflare dashboard: r2.yi-app.workers.dev
+# Enable automatic HTTPS
+# Configure cache TTL: 1 year (model files are immutable)
